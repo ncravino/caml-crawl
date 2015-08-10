@@ -259,7 +259,7 @@ print_endline "Can't walk thru walls"
 
 
 
-
+(*
 let init_world() = 
 let () = Random.self_init () in
 let correct_coord k =
@@ -291,6 +291,42 @@ end
 else
 `Repeat
 ) 
+*)
+
+let init_world() = 
+let () = Random.self_init () in
+let correct_coord k =
+if (k >= E.size) then 
+k-2
+else if (k < 0) then 
+k+2
+else 
+k 
+in
+Range.Int.iter (E.size/2) 
+~f:(fun x ->
+let  x = ref (Random.int E.size) in
+let  y = ref (Random.int E.size) in
+let () = player.x <- !x;
+player.y <- !y in
+Range.Int.iter_cond (E.size  )
+~f:(fun _->
+(match Random.int 4 with 
+|0 -> x:=correct_coord (!x+1)
+|1 -> x:=correct_coord (!x-1)
+|2 -> y:=correct_coord (!y+1)
+|_ -> y:=correct_coord (!y-1)
+);
+if world.(!x).(!y) = Wall then begin
+world.(!x).(!y) <- gen_random_cell();
+if (Random.float 1.) <= E.stuff_prob then 
+enemies := Tuple_map.add  (!x,!y) (gen_enemy ()) !enemies;
+`Continue
+end
+else
+`Repeat
+) 
+)
 
 let print_world () = 
 Range.Int.iter E.size 
@@ -383,8 +419,12 @@ end;
 draw_matrix (Game.surroundings_matrix ()) 11 11 (fun x->x)
 done
 
+(* test with
+module Game = Rogue(struct let size = 285 let stuff_prob = 0.02 end)
+let () = Game.init_world();
+draw_matrix (Game.world ) 285 285 Game.stuff_chr
 
-
+*)
 
 
 
